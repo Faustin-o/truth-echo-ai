@@ -9,6 +9,7 @@ import { askOracle } from "@/lib/oracle.functions";
 import { SoundWaves } from "@/components/oracle/sound-waves";
 import { CinemaMode } from "@/components/oracle/cinema-mode";
 import { MenuSheet } from "@/components/oracle/menu-sheet";
+import { useAppSettings } from "@/lib/app-settings";
 
 export const Route = createFileRoute("/")({
   ssr: false,
