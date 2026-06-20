@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2, Mail, KeyRound, ShieldCheck, ArrowLeft } from "lucide-react";
+import { Loader2, Mail, KeyRound, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -20,23 +20,97 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-type Step =
-  | { kind: "email" }
-  | { kind: "code"; email: string; mode: "signup" | "signin" }
-  | { kind: "create-pin"; email: string }
-  | { kind: "enter-pin"; email: string };
+type Mode = "signin" | "signup";
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [step, setStep] = useState<Step>({ kind: "email" });
+  const [mode, setMode] = useState<Mode>("signup");
+  const [email, setEmail] = useState("");
+  const [pin, setPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
   const [busy, setBusy] = useState(false);
 
-  // If already signed in, leave.
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate({ to: "/", replace: true });
     });
   }, [navigate]);
+
+  function validateEmail(): string | null {
+    const trimmed = email.trim().toLowerCase();
+    if (!/^\S+@\S+\.\S+$/.test(trimmed)) {
+      toast.error("Insere um e-mail válido.");
+      return null;
+    }
+    return trimmed;
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmed = validateEmail();
+    if (!trimmed) return;
+    if (!isPin(pin)) {
+      toast.error("PIN deve ter 4 dígitos.");
+      return;
+    }
+    if (mode === "signup" && pin !== confirmPin) {
+      toast.error("Os PINs não coincidem.");
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const password = derivePassword(trimmed, pin);
+
+      if (mode === "signup") {
+        const { error } = await supabase.auth.signUp({
+          email: trimmed,
+          password,
+          options: { emailRedirectTo: `${window.location.origin}/` },
+        });
+        if (error) {
+          if (/registered|exists/i.test(error.message)) {
+            toast.error("Este e-mail já tem conta. Entra com o PIN.");
+            setMode("signin");
+            return;
+          }
+          throw error;
+        }
+
+        // Garante sessão (caso a config retorne sem sessão)
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (!sessionData.session) {
+          const { error: signInErr } = await supabase.auth.signInWithPassword({
+            email: trimmed,
+            password,
+          });
+          if (signInErr) throw signInErr;
+        }
+
+        await supabase
+          .from("profiles")
+          .update({ pin_set: true })
+          .eq("email", trimmed);
+
+        toast.success("Bem-vindo à Verdade.");
+        navigate({ to: "/", replace: true });
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: trimmed,
+          password,
+        });
+        if (error) {
+          toast.error("E-mail ou PIN incorrectos.");
+          return;
+        }
+        navigate({ to: "/", replace: true });
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Falha na autenticação.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-obsidian px-6 text-foreground scanlines">
@@ -60,43 +134,69 @@ function AuthPage() {
         </div>
 
         <div className="border border-cyan-vivid/20 bg-obsidian/80 p-7 backdrop-blur-sm">
-          {step.kind === "email" && (
-            <EmailStep
-              busy={busy}
-              setBusy={setBusy}
-              onContinue={(email, mode) =>
-                setStep({ kind: "code", email, mode })
-              }
-              onPinExisting={(email) => setStep({ kind: "enter-pin", email })}
-            />
-          )}
-          {step.kind === "code" && (
-            <CodeStep
-              email={step.email}
-              busy={busy}
-              setBusy={setBusy}
-              onBack={() => setStep({ kind: "email" })}
-              onVerified={() => setStep({ kind: "create-pin", email: step.email })}
-            />
-          )}
-          {step.kind === "create-pin" && (
-            <CreatePinStep
-              email={step.email}
-              busy={busy}
-              setBusy={setBusy}
-              onDone={() => navigate({ to: "/", replace: true })}
-            />
-          )}
-          {step.kind === "enter-pin" && (
-            <EnterPinStep
-              email={step.email}
-              busy={busy}
-              setBusy={setBusy}
-              onBack={() => setStep({ kind: "email" })}
-              onForgotPin={() => setStep({ kind: "code", email: step.email, mode: "signup" })}
-              onDone={() => navigate({ to: "/", replace: true })}
-            />
-          )}
+          <form onSubmit={submit} className="space-y-5">
+            <div>
+              <p className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-cyan-vivid/70">
+                <KeyRound className="size-3.5" />
+                {mode === "signup" ? "Criar conta" : "Entrar"}
+              </p>
+              <h2 className="mt-2 font-display text-xl font-semibold tracking-tight">
+                {mode === "signup" ? "Sela a tua identidade" : "Acede ao oráculo"}
+              </h2>
+              <p className="mt-1 text-xs text-ghost">
+                E-mail e PIN de 4 dígitos. Sem código de confirmação.
+              </p>
+            </div>
+
+            <div className="relative">
+              <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ghost" />
+              <input
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="teu@email.com"
+                className="w-full border border-cyan-vivid/30 bg-obsidian/60 px-4 py-3 pl-10 text-sm text-foreground placeholder:text-ghost/50 outline-none focus:border-cyan-vivid"
+              />
+            </div>
+
+            <PinInput value={pin} onChange={setPin} placeholder="PIN" />
+            {mode === "signup" && (
+              <PinInput
+                value={confirmPin}
+                onChange={setConfirmPin}
+                placeholder="Confirma PIN"
+              />
+            )}
+
+            <button
+              type="submit"
+              disabled={busy}
+              className="flex w-full items-center justify-center gap-2 border border-cyan-vivid bg-cyan-vivid py-3 text-xs font-bold uppercase tracking-[0.3em] text-obsidian transition-colors hover:bg-white disabled:opacity-50"
+            >
+              {busy ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : mode === "signup" ? (
+                "Criar conta"
+              ) : (
+                "Entrar"
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setMode(mode === "signup" ? "signin" : "signup");
+                setConfirmPin("");
+              }}
+              disabled={busy}
+              className="block w-full text-center text-[10px] uppercase tracking-[0.3em] text-ghost hover:text-cyan-vivid"
+            >
+              {mode === "signup"
+                ? "Já tenho conta — entrar"
+                : "Não tenho conta — criar"}
+            </button>
+          </form>
         </div>
 
         <p className="mt-6 text-center text-[10px] uppercase tracking-[0.25em] text-ghost/60">
@@ -107,374 +207,13 @@ function AuthPage() {
   );
 }
 
-/* ---------- Steps ---------- */
-
-function EmailStep({
-  busy,
-  setBusy,
-  onContinue,
-  onPinExisting,
-}: {
-  busy: boolean;
-  setBusy: (b: boolean) => void;
-  onContinue: (email: string, mode: "signup" | "signin") => void;
-  onPinExisting: (email: string) => void;
-}) {
-  const [email, setEmail] = useState("");
-
-  function validate(): string | null {
-    const trimmed = email.trim().toLowerCase();
-    if (!/^\S+@\S+\.\S+$/.test(trimmed)) {
-      toast.error("Insere um e-mail válido.");
-      return null;
-    }
-    return trimmed;
-  }
-
-  async function startSignup(e: React.FormEvent) {
-    e.preventDefault();
-    const trimmed = validate();
-    if (!trimmed) return;
-    setBusy(true);
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: trimmed,
-        options: { shouldCreateUser: true },
-      });
-      if (error) throw error;
-      toast.success("Código enviado para o teu e-mail.");
-      onContinue(trimmed, "signup");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Falha ao enviar código.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  function goToPin() {
-    const trimmed = validate();
-    if (!trimmed) return;
-    onPinExisting(trimmed);
-  }
-
-  return (
-    <form onSubmit={startSignup} className="space-y-5">
-      <Header
-        icon={<Mail className="size-3.5" />}
-        kicker="Passo 01"
-        title="Identificação"
-        subtitle="Insere o teu e-mail. Já tens conta? Entra com o PIN."
-      />
-      <input
-        type="email"
-        autoComplete="email"
-        autoFocus
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="teu@email.com"
-        className="w-full border border-cyan-vivid/30 bg-obsidian/60 px-4 py-3 text-sm text-foreground placeholder:text-ghost/50 outline-none focus:border-cyan-vivid"
-      />
-      <PrimaryButton busy={busy}>Criar conta · Receber código</PrimaryButton>
-      <button
-        type="button"
-        onClick={goToPin}
-        disabled={busy}
-        className="block w-full text-center text-[10px] uppercase tracking-[0.3em] text-ghost hover:text-cyan-vivid"
-      >
-        Já tenho conta — entrar com PIN
-      </button>
-    </form>
-  );
-}
-
-function CodeStep({
-  email,
-  busy,
-  setBusy,
-  onBack,
-  onVerified,
-}: {
-  email: string;
-  busy: boolean;
-  setBusy: (b: boolean) => void;
-  onBack: () => void;
-  onVerified: () => void;
-}) {
-  const [code, setCode] = useState("");
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    const token = code.trim();
-    if (token.length < 6) {
-      toast.error("Código de 6 dígitos.");
-      return;
-    }
-    setBusy(true);
-    try {
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token,
-        type: "email",
-      });
-      if (error) throw error;
-      onVerified();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Código inválido.";
-      toast.error(msg);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function resend() {
-    setBusy(true);
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: { shouldCreateUser: true },
-      });
-      if (error) throw error;
-      toast.success("Código reenviado.");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Falha ao reenviar.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <form onSubmit={submit} className="space-y-5">
-      <BackBtn onClick={onBack} />
-      <Header
-        icon={<ShieldCheck className="size-3.5" />}
-        kicker="Passo 02"
-        title="Verificação"
-        subtitle={`Insere o código enviado para ${email}.`}
-      />
-      <input
-        inputMode="numeric"
-        pattern="\d*"
-        maxLength={6}
-        autoFocus
-        value={code}
-        onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-        placeholder="••••••"
-        className="w-full border border-cyan-vivid/30 bg-obsidian/60 px-4 py-3 text-center font-mono text-2xl tracking-[0.6em] text-foreground placeholder:text-ghost/50 outline-none focus:border-cyan-vivid"
-      />
-      <PrimaryButton busy={busy}>Verificar</PrimaryButton>
-      <button
-        type="button"
-        onClick={resend}
-        disabled={busy}
-        className="block w-full text-center text-[10px] uppercase tracking-[0.3em] text-ghost hover:text-cyan-vivid"
-      >
-        Reenviar código
-      </button>
-    </form>
-  );
-}
-
-function CreatePinStep({
-  email,
-  busy,
-  setBusy,
-  onDone,
-}: {
-  email: string;
-  busy: boolean;
-  setBusy: (b: boolean) => void;
-  onDone: () => void;
-}) {
-  const [pin, setPin] = useState("");
-  const [confirmPin, setConfirmPin] = useState("");
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!isPin(pin)) {
-      toast.error("PIN deve ter 4 dígitos.");
-      return;
-    }
-    if (pin !== confirmPin) {
-      toast.error("Os PINs não coincidem.");
-      return;
-    }
-    setBusy(true);
-    try {
-      const password = derivePassword(email, pin);
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
-      await supabase
-        .from("profiles")
-        .update({ pin_set: true })
-        .eq("email", email);
-      toast.success("PIN criado. Bem-vindo à Verdade.");
-      onDone();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Falha ao gravar PIN.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <form onSubmit={submit} className="space-y-5">
-      <Header
-        icon={<KeyRound className="size-3.5" />}
-        kicker="Passo 03"
-        title="Cria o teu PIN"
-        subtitle="4 dígitos. Vais usá-lo para entrar nas próximas vezes."
-      />
-      <PinInput value={pin} onChange={setPin} placeholder="PIN" />
-      <PinInput value={confirmPin} onChange={setConfirmPin} placeholder="Confirma" />
-      <PrimaryButton busy={busy}>Selar PIN</PrimaryButton>
-    </form>
-  );
-}
-
-function EnterPinStep({
-  email,
-  busy,
-  setBusy,
-  onBack,
-  onForgotPin,
-  onDone,
-}: {
-  email: string;
-  busy: boolean;
-  setBusy: (b: boolean) => void;
-  onBack: () => void;
-  onForgotPin: () => void;
-  onDone: () => void;
-}) {
-  const [pin, setPin] = useState("");
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!isPin(pin)) {
-      toast.error("PIN deve ter 4 dígitos.");
-      return;
-    }
-    setBusy(true);
-    try {
-      const password = derivePassword(email, pin);
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        toast.error("PIN incorrecto.");
-        return;
-      }
-      onDone();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Falha ao entrar.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function forgot() {
-    setBusy(true);
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: { shouldCreateUser: false },
-      });
-      if (error) throw error;
-      toast.success("Código enviado para redefinir PIN.");
-      onForgotPin();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Falha.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <form onSubmit={submit} className="space-y-5">
-      <BackBtn onClick={onBack} />
-      <Header
-        icon={<KeyRound className="size-3.5" />}
-        kicker="Acesso"
-        title="Insere o teu PIN"
-        subtitle={email}
-      />
-      <PinInput value={pin} onChange={setPin} autoFocus />
-      <PrimaryButton busy={busy}>Entrar</PrimaryButton>
-      <button
-        type="button"
-        onClick={forgot}
-        disabled={busy}
-        className="block w-full text-center text-[10px] uppercase tracking-[0.3em] text-ghost hover:text-cyan-vivid"
-      >
-        Esqueci o PIN
-      </button>
-    </form>
-  );
-}
-
-/* ---------- Bits ---------- */
-
-function Header({
-  icon,
-  kicker,
-  title,
-  subtitle,
-}: {
-  icon: React.ReactNode;
-  kicker: string;
-  title: string;
-  subtitle: string;
-}) {
-  return (
-    <div>
-      <p className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-cyan-vivid/70">
-        {icon}
-        {kicker}
-      </p>
-      <h2 className="mt-2 font-display text-xl font-semibold tracking-tight">{title}</h2>
-      <p className="mt-1 text-xs text-ghost">{subtitle}</p>
-    </div>
-  );
-}
-
-function PrimaryButton({
-  busy,
-  children,
-}: {
-  busy: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="submit"
-      disabled={busy}
-      className="flex w-full items-center justify-center gap-2 border border-cyan-vivid bg-cyan-vivid py-3 text-xs font-bold uppercase tracking-[0.3em] text-obsidian transition-colors hover:bg-white disabled:opacity-50"
-    >
-      {busy ? <Loader2 className="size-4 animate-spin" /> : children}
-    </button>
-  );
-}
-
-function BackBtn({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-ghost hover:text-cyan-vivid"
-    >
-      <ArrowLeft className="size-3" />
-      Voltar
-    </button>
-  );
-}
-
 function PinInput({
   value,
   onChange,
-  autoFocus,
   placeholder,
 }: {
   value: string;
   onChange: (v: string) => void;
-  autoFocus?: boolean;
   placeholder?: string;
 }) {
   return (
@@ -483,7 +222,6 @@ function PinInput({
       inputMode="numeric"
       pattern="\d*"
       maxLength={4}
-      autoFocus={autoFocus}
       value={value}
       onChange={(e) => onChange(e.target.value.replace(/\D/g, ""))}
       placeholder={placeholder ?? "••••"}
