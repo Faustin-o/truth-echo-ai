@@ -74,11 +74,13 @@ function OraclePage() {
     sttSupportedRef.current = Boolean(SR);
   }, []);
 
+  const settings = useAppSettings();
+
   async function submitQuestion(question: string) {
     setStatus("thinking");
     setTranscript(question);
     try {
-      const res = await ask({ data: { question, speak: true } });
+      const res = await ask({ data: { question, speak: settings.voiceEnabled } });
       setAnswer(res.answer);
       setAudioB64(res.audioBase64);
       setStatus("answered");
