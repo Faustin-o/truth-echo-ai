@@ -14,10 +14,11 @@ import {
   Play,
   Image as ImageIcon,
   RotateCcw,
+  ShieldCheck,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, Link } from "@tanstack/react-router";
 
 import { useAppSettings, setSettings, type ThemeId, type AmbienceCategory } from "@/lib/app-settings";
 import { startAmbience, stopAmbience, setAmbienceVolume } from "@/lib/audio-ambience";
@@ -41,8 +42,24 @@ export function MenuSheet({ open, onClose, onAskText }: MenuSheetProps) {
   const [section, setSection] = useState<Section>("history");
   const [items, setItems] = useState<HistoryRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const settings = useAppSettings();
+
+  useEffect(() => {
+    if (!open) return;
+    supabase.auth.getSession().then(({ data }) => {
+      const uid = data.session?.user.id;
+      if (!uid) return;
+      supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", uid)
+        .eq("role", "admin")
+        .maybeSingle()
+        .then(({ data: r }) => setIsAdmin(Boolean(r)));
+    });
+  }, [open]);
 
   useEffect(() => {
     if (!open || section !== "history") return;
@@ -167,10 +184,20 @@ export function MenuSheet({ open, onClose, onAskText }: MenuSheetProps) {
           )}
         </div>
 
-        <footer className="border-t border-white/5 p-6">
+        <footer className="space-y-3 border-t border-white/5 p-6">
+          {isAdmin && (
+            <Link
+              to="/admin"
+              onClick={onClose}
+              className="flex w-full items-center justify-center gap-2 border border-cyan-vivid/30 py-3 text-[11px] uppercase tracking-[0.3em] text-cyan-vivid transition-colors hover:bg-cyan-vivid hover:text-obsidian"
+            >
+              <ShieldCheck className="size-3.5" />
+              Painel administrativo
+            </Link>
+          )}
           <button
             onClick={signOut}
-            className="flex w-full items-center justify-center gap-2 border border-cyan-vivid/30 py-3 text-[11px] uppercase tracking-[0.3em] text-cyan-vivid transition-colors hover:bg-cyan-vivid hover:text-obsidian"
+            className="flex w-full items-center justify-center gap-2 border border-white/10 py-3 text-[11px] uppercase tracking-[0.3em] text-ghost transition-colors hover:border-destructive hover:text-destructive"
           >
             <LogOut className="size-3.5" />
             Terminar sessão
