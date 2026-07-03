@@ -169,17 +169,34 @@ function OraclePage() {
     );
   }
 
+  const investigationMessages = [
+    "A cruzar registos históricos...",
+    "A analisar evidências ocultas...",
+    "A formular a verdade...",
+  ];
+  const [investigationIdx, setInvestigationIdx] = useState(0);
+  useEffect(() => {
+    if (status !== "thinking") return;
+    setInvestigationIdx(0);
+    const id = setInterval(
+      () => setInvestigationIdx((i) => (i + 1) % investigationMessages.length),
+      1800,
+    );
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
+
   const statusLabel: Record<Status, string> = {
     idle: "Pronto para ouvir...",
     listening: "A receber transmissão...",
-    thinking: "A descodificar a verdade...",
-    answered: "Sintonia restabelecida",
+    thinking: investigationMessages[investigationIdx],
+    answered: "Investigação arquivada",
   };
 
   const subStatus: Record<Status, string> = {
-    idle: "Sintonia estabelecida",
+    idle: "A verdade nasce da investigação",
     listening: "Microfone aberto",
-    thinking: "Canal seguro",
+    thinking: "Investigação em curso",
     answered: "Pergunta de novo",
   };
 
