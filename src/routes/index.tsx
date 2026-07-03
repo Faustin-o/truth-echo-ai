@@ -15,11 +15,11 @@ export const Route = createFileRoute("/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "A VOZ DA VERDADE — Investigação" },
+      { title: "A VOZ E A VERDADE — Oráculo" },
       {
         name: "description",
         content:
-          "A verdade nasce da investigação. Faz a pergunta, escuta a análise — sem censura, sem clichés. Modo cinema imersivo com narração grave.",
+          "Pergunta com a voz. A Verdade responde — sem clichés, sem censura. Modo cinema imersivo com narração grave.",
       },
     ],
   }),
@@ -169,34 +169,17 @@ function OraclePage() {
     );
   }
 
-  const investigationMessages = [
-    "A cruzar registos históricos...",
-    "A analisar evidências ocultas...",
-    "A formular a verdade...",
-  ];
-  const [investigationIdx, setInvestigationIdx] = useState(0);
-  useEffect(() => {
-    if (status !== "thinking") return;
-    setInvestigationIdx(0);
-    const id = setInterval(
-      () => setInvestigationIdx((i) => (i + 1) % investigationMessages.length),
-      1800,
-    );
-    return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status]);
-
   const statusLabel: Record<Status, string> = {
     idle: "Pronto para ouvir...",
     listening: "A receber transmissão...",
-    thinking: investigationMessages[investigationIdx],
-    answered: "Investigação arquivada",
+    thinking: "A descodificar a verdade...",
+    answered: "Sintonia restabelecida",
   };
 
   const subStatus: Record<Status, string> = {
-    idle: "A verdade nasce da investigação",
+    idle: "Sintonia estabelecida",
     listening: "Microfone aberto",
-    thinking: "Investigação em curso",
+    thinking: "Canal seguro",
     answered: "Pergunta de novo",
   };
 
@@ -216,10 +199,10 @@ function OraclePage() {
       <header className="fixed top-0 left-0 z-40 flex w-full items-start justify-between bg-gradient-to-b from-obsidian via-obsidian/85 to-transparent p-6">
         <div className="space-y-1">
           <h1 className="font-display text-xl font-bold tracking-tighter uppercase leading-none">
-            A Voz da <span className="text-cyan-vivid">Verdade</span>
+            A Voz e a <span className="text-cyan-vivid">Verdade</span>
           </h1>
           <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-ghost">
-            A verdade nasce da investigação
+            Revelando o que o sistema esconde
           </p>
         </div>
         <button

@@ -24,27 +24,16 @@ export function CinemaMode({ open, question, answer, audioBase64, onClose }: Cin
     return () => stopAmbience();
   }, [open, settings.ambienceEnabled, settings.ambienceCategory, settings.ambienceVolume]);
 
-  const [revealed, setRevealed] = useState(false);
-
   useEffect(() => {
     if (!open) return;
-    setRevealed(false);
-    if (!audioBase64) {
-      // No audio → reveal immediately after a short beat
-      const t = setTimeout(() => setRevealed(true), 400);
-      return () => clearTimeout(t);
-    }
+    if (!audioBase64) return;
     const audio = new Audio(`data:audio/mpeg;base64,${audioBase64}`);
     audioRef.current = audio;
     audio.onplay = () => setIsSpeaking(true);
-    audio.onended = () => {
-      setIsSpeaking(false);
-      setRevealed(true);
-    };
+    audio.onended = () => setIsSpeaking(false);
     audio.onpause = () => setIsSpeaking(false);
     audio.play().catch(() => {
-      // autoplay blocked — allow reveal so user can still read + replay
-      setRevealed(true);
+      /* autoplay may be blocked — user can hit replay */
     });
     return () => {
       audio.pause();
@@ -106,19 +95,13 @@ export function CinemaMode({ open, question, answer, audioBase64, onClose }: Cin
         <div className="my-6 h-px bg-gradient-to-r from-transparent via-cyan-vivid/30 to-transparent" />
 
         <p className="text-[10px] uppercase tracking-[0.4em] text-cyan-vivid/60">
-          {revealed ? "A investigação foi arquivada" : "A Verdade fala..."}
+          A Verdade responde
         </p>
-        {revealed ? (
-          <p className="mt-3 max-h-[28vh] overflow-y-auto whitespace-pre-wrap font-display text-base leading-relaxed text-foreground fade-up">
-            {answer}
-          </p>
-        ) : (
-          <p className="mt-3 font-serif italic text-sm text-ghost/70">
-            Escuta. O texto surge quando a narração terminar.
-          </p>
-        )}
+        <p className="mt-3 max-h-[28vh] overflow-y-auto whitespace-pre-wrap font-display text-base leading-relaxed text-foreground">
+          {answer}
+        </p>
 
-        {audioBase64 && revealed && (
+        {audioBase64 && (
           <button
             onClick={replay}
             className="mt-6 border border-cyan-vivid/40 px-5 py-2 text-[11px] uppercase tracking-[0.3em] text-cyan-vivid transition-colors hover:bg-cyan-vivid hover:text-obsidian"
