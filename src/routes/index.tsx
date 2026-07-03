@@ -15,11 +15,11 @@ export const Route = createFileRoute("/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "A VOZ E A VERDADE — Oráculo" },
+      { title: "A VOZ DA VERDADE — Investigação" },
       {
         name: "description",
         content:
-          "Pergunta com a voz. A Verdade responde — sem clichés, sem censura. Modo cinema imersivo com narração grave.",
+          "A verdade nasce da investigação. Faz a pergunta, escuta a análise — sem censura, sem clichés. Modo cinema imersivo com narração grave.",
       },
     ],
   }),
