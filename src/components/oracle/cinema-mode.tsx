@@ -24,16 +24,27 @@ export function CinemaMode({ open, question, answer, audioBase64, onClose }: Cin
     return () => stopAmbience();
   }, [open, settings.ambienceEnabled, settings.ambienceCategory, settings.ambienceVolume]);
 
+  const [revealed, setRevealed] = useState(false);
+
   useEffect(() => {
     if (!open) return;
-    if (!audioBase64) return;
+    setRevealed(false);
+    if (!audioBase64) {
+      // No audio → reveal immediately after a short beat
+      const t = setTimeout(() => setRevealed(true), 400);
+      return () => clearTimeout(t);
+    }
     const audio = new Audio(`data:audio/mpeg;base64,${audioBase64}`);
     audioRef.current = audio;
     audio.onplay = () => setIsSpeaking(true);
-    audio.onended = () => setIsSpeaking(false);
+    audio.onended = () => {
+      setIsSpeaking(false);
+      setRevealed(true);
+    };
     audio.onpause = () => setIsSpeaking(false);
     audio.play().catch(() => {
-      /* autoplay may be blocked — user can hit replay */
+      // autoplay blocked — allow reveal so user can still read + replay
+      setRevealed(true);
     });
     return () => {
       audio.pause();
