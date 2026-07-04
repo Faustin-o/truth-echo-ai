@@ -212,7 +212,7 @@ function OraclePage() {
       return;
     }
     // 2nd attempt: MediaRecorder
-    if (typeof MediaRecorder !== "undefined" && navigator.mediaDevices?.getUserMedia) {
+    if (typeof MediaRecorder !== "undefined" && !!navigator.mediaDevices?.getUserMedia) {
       void startMediaRecorderFallback();
       return;
     }
