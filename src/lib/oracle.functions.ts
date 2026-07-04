@@ -37,10 +37,19 @@ export const askOracle = createServerFn({ method: "POST" })
       .object({
         question: z.string().trim().min(1).max(2000),
         speak: z.boolean().optional().default(true),
+        language: z.enum(["pt", "en", "fr", "es", "ar"]).optional().default("pt"),
       })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
+    const apiKey = process.env.LOVABLE_API_KEY;
+    if (!apiKey) {
+      throw new Error("Configuração ausente: LOVABLE_API_KEY");
+    }
+
+    const langName = { pt: "Português europeu", en: "English", fr: "Français", es: "Español", ar: "العربية" }[data.language];
+    const systemPrompt = `${SYSTEM_PROMPT}\n\nIDIOMA DA RESPOSTA: Responde em ${langName}.`;
+
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) {
       throw new Error("Configuração ausente: LOVABLE_API_KEY");
