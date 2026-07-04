@@ -123,6 +123,7 @@ export const askOracle = createServerFn({ method: "POST" })
         user_id: context.userId,
         question: data.question,
         answer,
+        language: data.language,
       });
     } catch (err) {
       console.error("history insert failed", err);
