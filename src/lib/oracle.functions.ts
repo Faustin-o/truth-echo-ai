@@ -37,7 +37,6 @@ export const askOracle = createServerFn({ method: "POST" })
       .object({
         question: z.string().trim().min(1).max(2000),
         speak: z.boolean().optional().default(true),
-        language: z.enum(["pt", "en", "fr", "es", "ar"]).optional().default("pt"),
       })
       .parse(input),
   )
@@ -46,9 +45,6 @@ export const askOracle = createServerFn({ method: "POST" })
     if (!apiKey) {
       throw new Error("Configuração ausente: LOVABLE_API_KEY");
     }
-
-    const langName = { pt: "Português europeu", en: "English", fr: "Français", es: "Español", ar: "العربية" }[data.language];
-    const systemPrompt = `${SYSTEM_PROMPT}\n\nIDIOMA DA RESPOSTA: Responde em ${langName}.`;
 
     // 1. Generate the truth.
     const chatRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -60,7 +56,7 @@ export const askOracle = createServerFn({ method: "POST" })
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: data.question },
         ],
       }),
@@ -123,7 +119,6 @@ export const askOracle = createServerFn({ method: "POST" })
         user_id: context.userId,
         question: data.question,
         answer,
-        language: data.language,
       });
     } catch (err) {
       console.error("history insert failed", err);
