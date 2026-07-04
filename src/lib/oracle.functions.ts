@@ -50,11 +50,6 @@ export const askOracle = createServerFn({ method: "POST" })
     const langName = { pt: "Português europeu", en: "English", fr: "Français", es: "Español", ar: "العربية" }[data.language];
     const systemPrompt = `${SYSTEM_PROMPT}\n\nIDIOMA DA RESPOSTA: Responde em ${langName}.`;
 
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) {
-      throw new Error("Configuração ausente: LOVABLE_API_KEY");
-    }
-
     // 1. Generate the truth.
     const chatRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -65,7 +60,11 @@ export const askOracle = createServerFn({ method: "POST" })
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: systemPrompt },
+          { role: "user", content: data.question },
+        ],
+      }),
+    });
           { role: "user", content: data.question },
         ],
       }),
