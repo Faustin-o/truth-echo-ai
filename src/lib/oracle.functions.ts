@@ -65,10 +65,6 @@ export const askOracle = createServerFn({ method: "POST" })
         ],
       }),
     });
-          { role: "user", content: data.question },
-        ],
-      }),
-    });
 
     if (!chatRes.ok) {
       const body = await chatRes.text().catch(() => "");
