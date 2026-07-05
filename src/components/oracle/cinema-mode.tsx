@@ -14,12 +14,10 @@ interface CinemaModeProps {
 export function CinemaMode({ open, question, answer, audioBase64, onClose }: CinemaModeProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [narrationFinished, setNarrationFinished] = useState(false);
   const settings = useAppSettings();
 
   useEffect(() => {
     if (!open) return;
-    setNarrationFinished(false);
     if (settings.ambienceEnabled) {
       startAmbience(settings.ambienceCategory, settings.ambienceVolume);
     }
@@ -28,25 +26,14 @@ export function CinemaMode({ open, question, answer, audioBase64, onClose }: Cin
 
   useEffect(() => {
     if (!open) return;
-    if (!audioBase64) {
-      // no narration available — reveal text immediately
-      setNarrationFinished(true);
-      return;
-    }
+    if (!audioBase64) return;
     const audio = new Audio(`data:audio/mpeg;base64,${audioBase64}`);
     audioRef.current = audio;
-    audio.onplay = () => {
-      setIsSpeaking(true);
-      setNarrationFinished(false);
-    };
-    audio.onended = () => {
-      setIsSpeaking(false);
-      setNarrationFinished(true);
-    };
+    audio.onplay = () => setIsSpeaking(true);
+    audio.onended = () => setIsSpeaking(false);
     audio.onpause = () => setIsSpeaking(false);
     audio.play().catch(() => {
-      // autoplay may be blocked — user can hit replay; still reveal text so it's not lost
-      setNarrationFinished(true);
+      /* autoplay may be blocked — user can hit replay */
     });
     return () => {
       audio.pause();
@@ -107,25 +94,12 @@ export function CinemaMode({ open, question, answer, audioBase64, onClose }: Cin
 
         <div className="my-6 h-px bg-gradient-to-r from-transparent via-cyan-vivid/30 to-transparent" />
 
-        {!narrationFinished ? (
-          <div className="fade-up">
-            <p className="text-[10px] uppercase tracking-[0.4em] text-cyan-vivid/60">
-              A investigar
-            </p>
-            <p className="mt-3 font-serif italic text-base text-ghost/80">
-              Ouve. A verdade está a ser narrada.
-            </p>
-          </div>
-        ) : (
-          <div className="fade-up">
-            <p className="text-[10px] uppercase tracking-[0.4em] text-cyan-vivid/60">
-              A investigação foi arquivada
-            </p>
-            <p className="mt-3 max-h-[28vh] overflow-y-auto whitespace-pre-wrap font-display text-base leading-relaxed text-foreground">
-              {answer}
-            </p>
-          </div>
-        )}
+        <p className="text-[10px] uppercase tracking-[0.4em] text-cyan-vivid/60">
+          A Verdade responde
+        </p>
+        <p className="mt-3 max-h-[28vh] overflow-y-auto whitespace-pre-wrap font-display text-base leading-relaxed text-foreground">
+          {answer}
+        </p>
 
         {audioBase64 && (
           <button

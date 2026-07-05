@@ -15,11 +15,11 @@ export const Route = createFileRoute("/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "A VOZ DA VERDADE — A verdade nasce da investigação" },
+      { title: "A VOZ E A VERDADE — Oráculo" },
       {
         name: "description",
         content:
-          "A VOZ DA VERDADE: cada pergunta é uma investigação. Análise imparcial, voz grave, modo cinema imersivo.",
+          "Pergunta com a voz. A Verdade responde — sem clichés, sem censura. Modo cinema imersivo com narração grave.",
       },
     ],
   }),
@@ -40,7 +40,6 @@ function OraclePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [textMode, setTextMode] = useState(false);
   const [textInput, setTextInput] = useState("");
-  const [subliminal, setSubliminal] = useState("A cruzar registos históricos...");
 
   const recognitionRef = useRef<unknown>(null);
   const sttSupportedRef = useRef<boolean>(false);
@@ -76,23 +75,6 @@ function OraclePage() {
   }, []);
 
   const settings = useAppSettings();
-
-  // Cycle subliminal investigation messages while thinking.
-  useEffect(() => {
-    if (status !== "thinking") return;
-    const messages = [
-      "A cruzar registos históricos...",
-      "A analisar evidências ocultas...",
-      "A formular a verdade...",
-    ];
-    let i = 0;
-    setSubliminal(messages[0]);
-    const t = setInterval(() => {
-      i = (i + 1) % messages.length;
-      setSubliminal(messages[i]);
-    }, 2200);
-    return () => clearInterval(t);
-  }, [status]);
 
   async function submitQuestion(question: string) {
     setStatus("thinking");
@@ -188,16 +170,16 @@ function OraclePage() {
   }
 
   const statusLabel: Record<Status, string> = {
-    idle: "PRONTO PARA OUVIR...",
+    idle: "Pronto para ouvir...",
     listening: "A receber transmissão...",
-    thinking: "A investigar...",
-    answered: "Investigação concluída",
+    thinking: "A descodificar a verdade...",
+    answered: "Sintonia restabelecida",
   };
 
   const subStatus: Record<Status, string> = {
-    idle: "A verdade nasce da investigação",
+    idle: "Sintonia estabelecida",
     listening: "Microfone aberto",
-    thinking: subliminal,
+    thinking: "Canal seguro",
     answered: "Pergunta de novo",
   };
 
@@ -215,6 +197,14 @@ function OraclePage() {
 
       {/* HEADER */}
       <header className="fixed top-0 left-0 z-40 flex w-full items-start justify-between bg-gradient-to-b from-obsidian via-obsidian/85 to-transparent p-6">
+        <div className="space-y-1">
+          <h1 className="font-display text-xl font-bold tracking-tighter uppercase leading-none">
+            A Voz e a <span className="text-cyan-vivid">Verdade</span>
+          </h1>
+          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-ghost">
+            Revelando o que o sistema esconde
+          </p>
+        </div>
         <button
           onClick={() => setMenuOpen(true)}
           className="grid size-10 place-items-center border border-cyan-vivid/20 text-cyan-vivid/70 transition-colors hover:border-cyan-vivid hover:text-cyan-vivid"
@@ -222,15 +212,6 @@ function OraclePage() {
         >
           <Menu className="size-4" />
         </button>
-        <div className="space-y-1 text-center">
-          <h1 className="font-display text-xl font-bold tracking-tighter uppercase leading-none">
-            A VOZ DA <span className="text-cyan-vivid">VERDADE</span>
-          </h1>
-          <p className="font-serif italic text-[11px] text-ghost">
-            "A verdade nasce da investigação."
-          </p>
-        </div>
-        <div className="size-10" aria-hidden="true" />
       </header>
 
       {/* MAIN ORACLE */}
@@ -342,12 +323,12 @@ function OraclePage() {
           >
             <Film className="relative z-10 size-4" />
             <span className="relative z-10">
-              {answer ? "🎥 Reabrir modo cinema" : "🎥 Ver resposta em vídeo"}
+              {answer ? "Reabrir modo cinema" : "Ver resposta em vídeo"}
             </span>
             <span className="absolute -left-full top-0 h-full w-full bg-gradient-to-r from-transparent via-cyan-vivid/30 to-transparent transition-all duration-700 group-hover:left-full" />
           </button>
           <p className="mt-3 text-center text-[10px] uppercase tracking-[0.3em] text-ghost/60">
-            Transforme qualquer resposta em vídeo
+            Transforme qualquer resposta em vídeo · Premium
           </p>
         </div>
       </footer>

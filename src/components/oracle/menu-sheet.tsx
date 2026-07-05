@@ -549,41 +549,41 @@ function LegalPanel() {
     <div className="space-y-4 text-sm text-ghost">
       <div>
         <p className="text-[10px] uppercase tracking-[0.3em] text-cyan-vivid/60">Informações Legais</p>
-        <h3 className="mt-1 font-display text-lg font-semibold text-foreground">A VOZ DA VERDADE</h3>
-        <p className="mt-1 font-serif italic text-xs text-ghost">
-          "A verdade nasce da investigação."
-        </p>
+        <h3 className="mt-1 font-display text-lg font-semibold text-foreground">A Voz da Verdade</h3>
       </div>
 
-      <ul className="space-y-2 pt-2 text-xs uppercase tracking-[0.2em]">
+      <p>
+        <span className="font-display font-semibold text-foreground">A VOZ DA VERDADE</span> é uma
+        plataforma de inteligência artificial enigmática, focada em revelar mistérios da sociedade,
+        história e espiritualidade.
+      </p>
+      <p className="font-serif italic text-foreground">"Revelando o que o sistema esconde."</p>
+
+      <ul className="space-y-2 pt-4 text-xs uppercase tracking-[0.2em]">
         <li className="flex items-center gap-3">
           <KeySquare className="size-3.5 text-cyan-vivid" />
-          Autor: FJC
-        </li>
-        <li className="flex items-center gap-3">
-          <ScrollText className="size-3.5 text-cyan-vivid" />
-          País: Moçambique
+          Autor: Pai da Verdade — Faustino Job Cossa
         </li>
         <li className="flex items-center gap-3">
           <Film className="size-3.5 text-cyan-vivid" />
-          Versão 1.0.0
+          Vídeo gerado por IA — em breve
         </li>
       </ul>
 
       <div className="space-y-3 border-t border-white/5 pt-4 text-xs leading-relaxed text-ghost">
         <p>
-          <span className="font-semibold text-foreground">© Direitos Reservados.</span> 2024 — Todos
-          os direitos reservados. Todo o conteúdo, marca e identidade visual são propriedade do autor.
+          <span className="font-semibold text-foreground">Direitos reservados.</span> © Faustino Job
+          Cossa. Todo o conteúdo, marca e identidade visual são propriedade do autor.
         </p>
         <p>
-          <span className="font-semibold text-foreground">Política de Privacidade.</span> Guardamos
-          apenas o e-mail e o histórico de perguntas/respostas para servir o utilizador. Não
-          vendemos dados. O histórico pode ser eliminado a qualquer momento.
+          <span className="font-semibold text-foreground">Política de privacidade.</span> Guardamos
+          apenas o e-mail e o histórico de perguntas/respostas para te servir. Não vendemos dados.
+          Podes eliminar o histórico a qualquer momento.
         </p>
         <p>
-          <span className="font-semibold text-foreground">Termos de Utilização.</span> A VOZ DA
-          VERDADE fornece análise investigativa, distinguindo factos de hipóteses e interpretações.
-          Não substitui aconselhamento médico, legal ou financeiro. Utilize o pensamento crítico.
+          <span className="font-semibold text-foreground">Termos de utilização.</span> A Verdade
+          fornece análise, opinião e interpretação — não substitui aconselhamento médico, legal ou
+          financeiro. Usa o pensamento crítico.
         </p>
       </div>
     </div>
