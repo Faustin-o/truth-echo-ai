@@ -40,6 +40,24 @@ function OraclePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [textMode, setTextMode] = useState(false);
   const [textInput, setTextInput] = useState("");
+  const [investigationMsg, setInvestigationMsg] = useState(0);
+
+  const INVESTIGATION_STEPS = [
+    "A cruzar registos históricos...",
+    "A analisar evidências ocultas...",
+    "A comparar fontes divergentes...",
+    "A formular a verdade...",
+  ];
+
+  useEffect(() => {
+    if (status !== "thinking") return;
+    setInvestigationMsg(0);
+    const id = setInterval(() => {
+      setInvestigationMsg((i) => (i + 1) % INVESTIGATION_STEPS.length);
+    }, 2200);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
 
   const recognitionRef = useRef<unknown>(null);
   const sttSupportedRef = useRef<boolean>(false);
@@ -170,11 +188,12 @@ function OraclePage() {
   }
 
   const statusLabel: Record<Status, string> = {
-    idle: "Pronto para ouvir...",
+    idle: "PRONTO PARA OUVIR...",
     listening: "A receber transmissão...",
-    thinking: "A descodificar a verdade...",
-    answered: "Sintonia restabelecida",
+    thinking: "A investigar a verdade...",
+    answered: "Investigação concluída",
   };
+
 
   const subStatus: Record<Status, string> = {
     idle: "Sintonia estabelecida",
@@ -199,10 +218,10 @@ function OraclePage() {
       <header className="fixed top-0 left-0 z-40 flex w-full items-start justify-between bg-gradient-to-b from-obsidian via-obsidian/85 to-transparent p-6">
         <div className="space-y-1">
           <h1 className="font-display text-xl font-bold tracking-tighter uppercase leading-none">
-            A Voz e a <span className="text-cyan-vivid">Verdade</span>
+            A Voz da <span className="text-cyan-vivid">Verdade</span>
           </h1>
           <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-ghost">
-            Revelando o que o sistema esconde
+            A verdade nasce da investigação
           </p>
         </div>
         <button
@@ -260,9 +279,18 @@ function OraclePage() {
           </p>
         )}
 
-        {!transcript && (
+        {!transcript && status !== "thinking" && (
           <p className="mt-12 max-w-xs text-center font-serif italic text-sm text-ghost/70">
             "O silêncio é a única coisa que eles não conseguem monitorar."
+          </p>
+        )}
+
+        {status === "thinking" && (
+          <p
+            key={investigationMsg}
+            className="mt-8 text-[10px] uppercase tracking-[0.4em] text-cyan-vivid/70 fade-up"
+          >
+            {INVESTIGATION_STEPS[investigationMsg]}
           </p>
         )}
 
