@@ -101,8 +101,9 @@ export const askOracle = createServerFn({ method: "POST" })
             input: answer,
             voice: TTS_VOICE,
             response_format: "mp3",
+            speed: 1.05,
             instructions:
-              "Fala com voz masculina grave, profunda, calma e confiante. Tom reflexivo e enigmático. Pausas deliberadas. Nunca robótico. Como um oráculo num templo escuro.",
+              "Voz masculina grave, profunda, confiante e ATIVA. Ritmo moderado — nunca sonolento nem arrastado. Tom enigmático, reflexivo e emocionante, com pausas deliberadas apenas nos momentos-chave. Presença viva, como um oráculo que revela verdades ocultas, não um narrador cansado.",
           }),
         });
 
