@@ -14,6 +14,7 @@ interface CinemaModeProps {
 export function CinemaMode({ open, question, answer, audioBase64, onClose }: CinemaModeProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [revealed, setRevealed] = useState(false);
   const settings = useAppSettings();
 
   useEffect(() => {
@@ -25,15 +26,27 @@ export function CinemaMode({ open, question, answer, audioBase64, onClose }: Cin
   }, [open, settings.ambienceEnabled, settings.ambienceCategory, settings.ambienceVolume]);
 
   useEffect(() => {
-    if (!open) return;
-    if (!audioBase64) return;
+    if (!open) {
+      setRevealed(false);
+      return;
+    }
+    if (!audioBase64) {
+      // No audio available — reveal immediately.
+      setRevealed(true);
+      return;
+    }
+    setRevealed(false);
     const audio = new Audio(`data:audio/mpeg;base64,${audioBase64}`);
     audioRef.current = audio;
     audio.onplay = () => setIsSpeaking(true);
-    audio.onended = () => setIsSpeaking(false);
+    audio.onended = () => {
+      setIsSpeaking(false);
+      setRevealed(true);
+    };
     audio.onpause = () => setIsSpeaking(false);
     audio.play().catch(() => {
-      /* autoplay may be blocked — user can hit replay */
+      // Autoplay blocked — allow reveal so user can read + replay.
+      setRevealed(true);
     });
     return () => {
       audio.pause();
