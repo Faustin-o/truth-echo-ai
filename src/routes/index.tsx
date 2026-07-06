@@ -279,9 +279,18 @@ function OraclePage() {
           </p>
         )}
 
-        {!transcript && (
+        {!transcript && status !== "thinking" && (
           <p className="mt-12 max-w-xs text-center font-serif italic text-sm text-ghost/70">
             "O silêncio é a única coisa que eles não conseguem monitorar."
+          </p>
+        )}
+
+        {status === "thinking" && (
+          <p
+            key={investigationMsg}
+            className="mt-8 text-[10px] uppercase tracking-[0.4em] text-cyan-vivid/70 fade-up"
+          >
+            {INVESTIGATION_STEPS[investigationMsg]}
           </p>
         )}
 
