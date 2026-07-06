@@ -108,11 +108,17 @@ export function CinemaMode({ open, question, answer, audioBase64, onClose }: Cin
         <div className="my-6 h-px bg-gradient-to-r from-transparent via-cyan-vivid/30 to-transparent" />
 
         <p className="text-[10px] uppercase tracking-[0.4em] text-cyan-vivid/60">
-          A Verdade responde
+          {revealed ? "Arquivada no histórico" : "A Verdade fala..."}
         </p>
-        <p className="mt-3 max-h-[28vh] overflow-y-auto whitespace-pre-wrap font-display text-base leading-relaxed text-foreground">
-          {answer}
-        </p>
+        {revealed ? (
+          <p className="mt-3 max-h-[28vh] overflow-y-auto whitespace-pre-wrap font-display text-base leading-relaxed text-foreground fade-up">
+            {answer}
+          </p>
+        ) : (
+          <p className="mt-3 font-serif italic text-sm text-ghost/70">
+            Ouve. O texto será revelado quando a narração terminar.
+          </p>
+        )}
 
         {audioBase64 && (
           <button
