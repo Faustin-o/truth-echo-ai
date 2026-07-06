@@ -40,6 +40,24 @@ function OraclePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [textMode, setTextMode] = useState(false);
   const [textInput, setTextInput] = useState("");
+  const [investigationMsg, setInvestigationMsg] = useState(0);
+
+  const INVESTIGATION_STEPS = [
+    "A cruzar registos históricos...",
+    "A analisar evidências ocultas...",
+    "A comparar fontes divergentes...",
+    "A formular a verdade...",
+  ];
+
+  useEffect(() => {
+    if (status !== "thinking") return;
+    setInvestigationMsg(0);
+    const id = setInterval(() => {
+      setInvestigationMsg((i) => (i + 1) % INVESTIGATION_STEPS.length);
+    }, 2200);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
 
   const recognitionRef = useRef<unknown>(null);
   const sttSupportedRef = useRef<boolean>(false);
