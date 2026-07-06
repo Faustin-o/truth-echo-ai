@@ -170,11 +170,12 @@ function OraclePage() {
   }
 
   const statusLabel: Record<Status, string> = {
-    idle: "Pronto para ouvir...",
+    idle: "PRONTO PARA OUVIR...",
     listening: "A receber transmissão...",
-    thinking: "A descodificar a verdade...",
-    answered: "Sintonia restabelecida",
+    thinking: "A investigar a verdade...",
+    answered: "Investigação concluída",
   };
+
 
   const subStatus: Record<Status, string> = {
     idle: "Sintonia estabelecida",
