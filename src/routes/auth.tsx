@@ -55,36 +55,13 @@ function AuthPage() {
     const trimmed = normalizedEmail();
     if (!trimmed) return;
 
-    setBusy(true);
-    try {
-      if (mode === "signin") {
-        // Login direto: pede PIN no próximo passo
-        setStep("login-pin");
-      } else {
-        // signup ou recover → envia código por e-mail
-        const { error } = await supabase.auth.signInWithOtp({
-          email: trimmed,
-          options: {
-            shouldCreateUser: mode === "signup",
-            emailRedirectTo: `${window.location.origin}/`,
-          },
-        });
-        if (error) {
-          if (mode === "signup" && /registered|exists/i.test(error.message)) {
-            toast.error("Este e-mail já tem conta. Entra com PIN.");
-            setMode("signin");
-            return;
-          }
-          throw error;
-        }
-        toast.success("Código enviado para o teu e-mail.");
-        setStep("code");
-      }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Falha ao enviar código.");
-    } finally {
-      setBusy(false);
+    if (mode === "recover") {
+      toast.info("Recuperação por e-mail estará disponível em breve. Contacta o suporte.");
+      return;
     }
+
+    // signup e signin → PIN directo (sem OTP por enquanto)
+    setStep(mode === "signup" ? "pin" : "login-pin");
   }
 
   // Step 2 — verify OTP code
