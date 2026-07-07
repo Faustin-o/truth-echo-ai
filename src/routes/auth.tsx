@@ -108,15 +108,30 @@ function AuthPage() {
     setBusy(true);
     try {
       const password = derivePassword(trimmed, pin);
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
+      const { error } = await supabase.auth.signUp({
+        email: trimmed,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/` },
+      });
+      if (error) {
+        if (/registered|exists/i.test(error.message)) {
+          toast.error("Este e-mail já tem conta. Entra com o teu PIN.");
+          resetFlow("signin");
+          return;
+        }
+        throw error;
+      }
+
+      // Auto-confirm está ativo — sessão já existe. Garante login.
+      const { error: signInErr } = await supabase.auth.signInWithPassword({ email: trimmed, password });
+      if (signInErr) throw signInErr;
 
       await supabase.from("profiles").update({ pin_set: true }).eq("email", trimmed);
 
       toast.success("Bem-vindo à Verdade.");
       navigate({ to: "/", replace: true });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Falha ao definir PIN.");
+      toast.error(err instanceof Error ? err.message : "Falha ao criar conta.");
     } finally {
       setBusy(false);
     }
