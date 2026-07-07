@@ -352,3 +352,29 @@ function OraclePage() {
     </div>
   );
 }
+
+const INVESTIGATION_STEPS = [
+  "A desconstruir a pergunta...",
+  "A cruzar registos históricos...",
+  "A analisar evidências ocultas...",
+  "A comparar fontes ancestrais...",
+  "A distinguir facto de hipótese...",
+  "A formular a verdade...",
+];
+
+function InvestigationTicker() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setI((v) => (v + 1) % INVESTIGATION_STEPS.length), 2200);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <p
+      key={i}
+      className="mt-10 text-center text-[10px] uppercase tracking-[0.35em] text-cyan-vivid/80 fade-up"
+    >
+      {INVESTIGATION_STEPS[i]}
+    </p>
+  );
+}
+
