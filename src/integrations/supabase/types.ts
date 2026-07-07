@@ -131,6 +131,45 @@ export type Database = {
         }
         Relationships: []
       }
+      video_queue: {
+        Row: {
+          answer: string
+          created_at: string
+          error: string | null
+          id: string
+          language: string | null
+          question: string
+          status: string
+          updated_at: string
+          user_id: string
+          video_url: string | null
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          language?: string | null
+          question: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          video_url?: string | null
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          language?: string | null
+          question?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
