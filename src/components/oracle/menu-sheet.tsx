@@ -554,15 +554,19 @@ function LegalPanel() {
 
       <p>
         <span className="font-display font-semibold text-foreground">A VOZ DA VERDADE</span> é uma
-        plataforma de inteligência artificial enigmática, focada em revelar mistérios da sociedade,
-        história e espiritualidade.
+        plataforma de inteligência artificial investigativa, focada em revelar mistérios da
+        sociedade, história e espiritualidade através da análise crítica de evidências.
       </p>
-      <p className="font-serif italic text-foreground">"Revelando o que o sistema esconde."</p>
+      <p className="font-serif italic text-foreground">"A verdade nasce da investigação."</p>
 
       <ul className="space-y-2 pt-4 text-xs uppercase tracking-[0.2em]">
         <li className="flex items-center gap-3">
           <KeySquare className="size-3.5 text-cyan-vivid" />
-          Autor: Pai da Verdade — Faustino Job Cossa
+          Autor: FJC
+        </li>
+        <li className="flex items-center gap-3">
+          <ScrollText className="size-3.5 text-cyan-vivid" />
+          País: Moçambique
         </li>
         <li className="flex items-center gap-3">
           <Film className="size-3.5 text-cyan-vivid" />
@@ -572,18 +576,22 @@ function LegalPanel() {
 
       <div className="space-y-3 border-t border-white/5 pt-4 text-xs leading-relaxed text-ghost">
         <p>
-          <span className="font-semibold text-foreground">Direitos reservados.</span> © Faustino Job
-          Cossa. Todo o conteúdo, marca e identidade visual são propriedade do autor.
+          <span className="font-semibold text-foreground">Direitos.</span> © Direitos Reservados
+          2024 — Todos os direitos reservados. Todo o conteúdo, marca e identidade visual são
+          propriedade do autor.
         </p>
         <p>
-          <span className="font-semibold text-foreground">Política de privacidade.</span> Guardamos
+          <span className="font-semibold text-foreground">Política de Privacidade.</span> Guardamos
           apenas o e-mail e o histórico de perguntas/respostas para te servir. Não vendemos dados.
           Podes eliminar o histórico a qualquer momento.
         </p>
         <p>
-          <span className="font-semibold text-foreground">Termos de utilização.</span> A Verdade
-          fornece análise, opinião e interpretação — não substitui aconselhamento médico, legal ou
-          financeiro. Usa o pensamento crítico.
+          <span className="font-semibold text-foreground">Termos de Utilização.</span> A Verdade
+          fornece análise investigativa — não substitui aconselhamento médico, legal ou financeiro.
+          Para decisões sobre a tua saúde, procura sempre um profissional qualificado.
+        </p>
+        <p className="pt-2 text-[10px] uppercase tracking-[0.3em] text-cyan-vivid/70">
+          Versão 1.0.0
         </p>
       </div>
     </div>
