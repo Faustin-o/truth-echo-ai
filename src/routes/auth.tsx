@@ -55,13 +55,36 @@ function AuthPage() {
     const trimmed = normalizedEmail();
     if (!trimmed) return;
 
-    if (mode === "recover") {
-      toast.info("Recuperação por e-mail estará disponível em breve. Contacta o suporte.");
-      return;
+    setBusy(true);
+    try {
+      if (mode === "signin") {
+        // Login direto: pede PIN no próximo passo
+        setStep("login-pin");
+      } else {
+        // signup ou recover → envia código por e-mail
+        const { error } = await supabase.auth.signInWithOtp({
+          email: trimmed,
+          options: {
+            shouldCreateUser: mode === "signup",
+            emailRedirectTo: `${window.location.origin}/`,
+          },
+        });
+        if (error) {
+          if (mode === "signup" && /registered|exists/i.test(error.message)) {
+            toast.error("Este e-mail já tem conta. Entra com PIN.");
+            setMode("signin");
+            return;
+          }
+          throw error;
+        }
+        toast.success("Código enviado para o teu e-mail.");
+        setStep("code");
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Falha ao enviar código.");
+    } finally {
+      setBusy(false);
     }
-
-    // signup e signin → PIN directo (sem OTP por enquanto)
-    setStep(mode === "signup" ? "pin" : "login-pin");
   }
 
   // Step 2 — verify OTP code
@@ -108,30 +131,15 @@ function AuthPage() {
     setBusy(true);
     try {
       const password = derivePassword(trimmed, pin);
-      const { error } = await supabase.auth.signUp({
-        email: trimmed,
-        password,
-        options: { emailRedirectTo: `${window.location.origin}/` },
-      });
-      if (error) {
-        if (/registered|exists/i.test(error.message)) {
-          toast.error("Este e-mail já tem conta. Entra com o teu PIN.");
-          resetFlow("signin");
-          return;
-        }
-        throw error;
-      }
-
-      // Auto-confirm está ativo — sessão já existe. Garante login.
-      const { error: signInErr } = await supabase.auth.signInWithPassword({ email: trimmed, password });
-      if (signInErr) throw signInErr;
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
 
       await supabase.from("profiles").update({ pin_set: true }).eq("email", trimmed);
 
       toast.success("Bem-vindo à Verdade.");
       navigate({ to: "/", replace: true });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Falha ao criar conta.");
+      toast.error(err instanceof Error ? err.message : "Falha ao definir PIN.");
     } finally {
       setBusy(false);
     }
