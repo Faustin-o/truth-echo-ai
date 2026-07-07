@@ -172,14 +172,14 @@ function OraclePage() {
   const statusLabel: Record<Status, string> = {
     idle: "Pronto para ouvir...",
     listening: "A receber transmissão...",
-    thinking: "A descodificar a verdade...",
+    thinking: "A investigar a verdade...",
     answered: "Sintonia restabelecida",
   };
 
   const subStatus: Record<Status, string> = {
-    idle: "Sintonia estabelecida",
+    idle: "A verdade nasce da investigação",
     listening: "Microfone aberto",
-    thinking: "Canal seguro",
+    thinking: "Investigação em curso",
     answered: "Pergunta de novo",
   };
 
@@ -202,7 +202,7 @@ function OraclePage() {
             A Voz e a <span className="text-cyan-vivid">Verdade</span>
           </h1>
           <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-ghost">
-            Revelando o que o sistema esconde
+            A verdade nasce da investigação
           </p>
         </div>
         <button
@@ -253,6 +253,9 @@ function OraclePage() {
             </div>
           </button>
         </div>
+
+        {status === "thinking" && <InvestigationTicker />}
+
 
         {transcript && (
           <p className="mt-12 max-w-md text-center font-serif italic text-base text-ghost fade-up">
@@ -349,3 +352,29 @@ function OraclePage() {
     </div>
   );
 }
+
+const INVESTIGATION_STEPS = [
+  "A desconstruir a pergunta...",
+  "A cruzar registos históricos...",
+  "A analisar evidências ocultas...",
+  "A comparar fontes ancestrais...",
+  "A distinguir facto de hipótese...",
+  "A formular a verdade...",
+];
+
+function InvestigationTicker() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setI((v) => (v + 1) % INVESTIGATION_STEPS.length), 2200);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <p
+      key={i}
+      className="mt-10 text-center text-[10px] uppercase tracking-[0.35em] text-cyan-vivid/80 fade-up"
+    >
+      {INVESTIGATION_STEPS[i]}
+    </p>
+  );
+}
+

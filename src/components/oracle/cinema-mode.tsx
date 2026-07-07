@@ -14,6 +14,8 @@ interface CinemaModeProps {
 export function CinemaMode({ open, question, answer, audioBase64, onClose }: CinemaModeProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [narrationDone, setNarrationDone] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
   const settings = useAppSettings();
 
   useEffect(() => {
@@ -26,14 +28,29 @@ export function CinemaMode({ open, question, answer, audioBase64, onClose }: Cin
 
   useEffect(() => {
     if (!open) return;
-    if (!audioBase64) return;
+    setNarrationDone(false);
+    setShowArchived(false);
+
+    if (!audioBase64) {
+      // sem áudio → revela imediatamente
+      setNarrationDone(true);
+      setShowArchived(true);
+      return;
+    }
     const audio = new Audio(`data:audio/mpeg;base64,${audioBase64}`);
     audioRef.current = audio;
     audio.onplay = () => setIsSpeaking(true);
-    audio.onended = () => setIsSpeaking(false);
+    audio.onended = () => {
+      setIsSpeaking(false);
+      setShowArchived(true);
+      // pequena pausa antes de revelar o texto
+      setTimeout(() => setNarrationDone(true), 900);
+    };
     audio.onpause = () => setIsSpeaking(false);
     audio.play().catch(() => {
-      /* autoplay may be blocked — user can hit replay */
+      // autoplay bloqueado — mostra tudo para o utilizador poder reproduzir
+      setNarrationDone(true);
+      setShowArchived(true);
     });
     return () => {
       audio.pause();
@@ -97,11 +114,32 @@ export function CinemaMode({ open, question, answer, audioBase64, onClose }: Cin
         <p className="text-[10px] uppercase tracking-[0.4em] text-cyan-vivid/60">
           A Verdade responde
         </p>
-        <p className="mt-3 max-h-[28vh] overflow-y-auto whitespace-pre-wrap font-display text-base leading-relaxed text-foreground">
-          {answer}
-        </p>
 
-        {audioBase64 && (
+        {!narrationDone ? (
+          <div className="mt-4 flex flex-col items-start gap-2">
+            <p className="font-serif italic text-sm text-ghost/80">
+              Escuta. O texto surge quando a voz terminar.
+            </p>
+            {showArchived && (
+              <p className="fade-up text-[10px] uppercase tracking-[0.4em] text-cyan-vivid">
+                Arquivada no histórico.
+              </p>
+            )}
+          </div>
+        ) : (
+          <>
+            {showArchived && (
+              <p className="mt-3 fade-up text-[10px] uppercase tracking-[0.4em] text-cyan-vivid">
+                Arquivada no histórico.
+              </p>
+            )}
+            <p className="mt-3 max-h-[28vh] overflow-y-auto whitespace-pre-wrap font-display text-base leading-relaxed text-foreground fade-up">
+              {answer}
+            </p>
+          </>
+        )}
+
+        {audioBase64 && narrationDone && (
           <button
             onClick={replay}
             className="mt-6 border border-cyan-vivid/40 px-5 py-2 text-[11px] uppercase tracking-[0.3em] text-cyan-vivid transition-colors hover:bg-cyan-vivid hover:text-obsidian"
