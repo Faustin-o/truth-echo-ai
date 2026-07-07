@@ -254,6 +254,9 @@ function OraclePage() {
           </button>
         </div>
 
+        {status === "thinking" && <InvestigationTicker />}
+
+
         {transcript && (
           <p className="mt-12 max-w-md text-center font-serif italic text-base text-ghost fade-up">
             "{transcript}"
