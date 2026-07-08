@@ -557,7 +557,7 @@ function LegalPanel() {
         plataforma de inteligência artificial enigmática, focada em revelar mistérios da sociedade,
         história e espiritualidade.
       </p>
-      <p className="font-serif italic text-foreground">"Revelando o que o sistema esconde."</p>
+      <p className="font-serif italic text-foreground">"A luz do conhecimento para um novo despertar."</p>
 
       <ul className="space-y-2 pt-4 text-xs uppercase tracking-[0.2em]">
         <li className="flex items-center gap-3">
