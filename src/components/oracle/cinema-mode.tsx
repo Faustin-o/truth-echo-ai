@@ -14,10 +14,12 @@ interface CinemaModeProps {
 export function CinemaMode({ open, question, answer, audioBase64, onClose }: CinemaModeProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [hasFinished, setHasFinished] = useState(false);
   const settings = useAppSettings();
 
   useEffect(() => {
     if (!open) return;
+    setHasFinished(false);
     if (settings.ambienceEnabled) {
       startAmbience(settings.ambienceCategory, settings.ambienceVolume);
     }
@@ -26,11 +28,21 @@ export function CinemaMode({ open, question, answer, audioBase64, onClose }: Cin
 
   useEffect(() => {
     if (!open) return;
-    if (!audioBase64) return;
+    if (!audioBase64) {
+      // No audio — still mark as finished so the archive notice appears.
+      setHasFinished(true);
+      return;
+    }
     const audio = new Audio(`data:audio/mpeg;base64,${audioBase64}`);
     audioRef.current = audio;
-    audio.onplay = () => setIsSpeaking(true);
-    audio.onended = () => setIsSpeaking(false);
+    audio.onplay = () => {
+      setIsSpeaking(true);
+      setHasFinished(false);
+    };
+    audio.onended = () => {
+      setIsSpeaking(false);
+      setHasFinished(true);
+    };
     audio.onpause = () => setIsSpeaking(false);
     audio.play().catch(() => {
       /* autoplay may be blocked — user can hit replay */
