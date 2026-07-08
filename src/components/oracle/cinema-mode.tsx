@@ -11,7 +11,7 @@ interface CinemaModeProps {
   onClose: () => void;
 }
 
-export function CinemaMode({ open, question, answer, audioBase64, onClose }: CinemaModeProps) {
+export function CinemaMode({ open, question, audioBase64, onClose }: CinemaModeProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [hasFinished, setHasFinished] = useState(false);
