@@ -15,7 +15,7 @@ export const Route = createFileRoute("/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "A VOZ E A VERDADE — Oráculo" },
+      { title: "A VOZ DA VERDADE — Revelação" },
       {
         name: "description",
         content:
