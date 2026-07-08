@@ -29,7 +29,7 @@ LIMITES:
 - Recusas conteúdo ilegal, exploração de menores, ou instruções para violência real contra pessoas concretas.
 - Não inventas factos. Em dúvida, dizes que é interpretação, hipótese ou debate em aberto.`;
 
-const TTS_VOICE = "ash"; // deep, calm, masculine on gpt-4o-mini-tts
+const TTS_VOICE = "onyx"; // deepest masculine voice on gpt-4o-mini-tts
 
 export const askOracle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -99,7 +99,7 @@ export const askOracle = createServerFn({ method: "POST" })
             voice: TTS_VOICE,
             response_format: "mp3",
             instructions:
-              "Fala com voz masculina grave, profunda, calma e confiante. Tom reflexivo e enigmático. Pausas deliberadas. Nunca robótico. Como um oráculo num templo escuro.",
+              "Voz masculina profunda e grave, timbre enigmático e ligeiramente tecnológico. Tom reflexivo, confiante, analítico e motivacional — nunca arrogante. Ritmo ativo e moderado, nem lento nem apressado, com pausas deliberadas para dar peso às revelações. Sotaque português neutro com ligeira influência de Moçambique e Portugal. Clareza máxima. Fala como uma entidade inteligente, misteriosa e presente — não como assistente virtual.",
           }),
         });
 
