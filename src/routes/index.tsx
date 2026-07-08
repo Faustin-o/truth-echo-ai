@@ -44,17 +44,28 @@ function OraclePage() {
   const recognitionRef = useRef<unknown>(null);
   const sttSupportedRef = useRef<boolean>(false);
 
-  // Auth gate
+  // Splash + auth gate: show logo for min ~2.5s while checking session in background
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getSession().then(({ data }) => {
+    const started = Date.now();
+    const MIN_SPLASH_MS = 2500;
+
+    const finish = (hasSession: boolean) => {
       if (!mounted) return;
-      if (!data.session) {
-        navigate({ to: "/auth", replace: true });
-      } else {
-        setAuthChecked(true);
-      }
-    });
+      const elapsed = Date.now() - started;
+      const wait = Math.max(0, MIN_SPLASH_MS - elapsed);
+      setTimeout(() => {
+        if (!mounted) return;
+        if (!hasSession) {
+          navigate({ to: "/auth", replace: true });
+        } else {
+          setAuthChecked(true);
+        }
+      }, wait);
+    };
+
+    supabase.auth.getSession().then(({ data }) => finish(Boolean(data.session)));
+
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) navigate({ to: "/auth", replace: true });
     });
@@ -163,8 +174,29 @@ function OraclePage() {
 
   if (!authChecked) {
     return (
-      <div className="grid min-h-screen place-items-center bg-obsidian">
-        <Loader2 className="size-6 animate-spin text-cyan-vivid" />
+      <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-obsidian scanlines">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.25]"
+          aria-hidden="true"
+          style={{
+            backgroundImage:
+              "radial-gradient(ellipse at 50% 40%, rgba(0,242,255,0.28) 0%, transparent 55%)",
+          }}
+        />
+        <div className="relative z-10 flex flex-col items-center gap-6 fade-up">
+          <div className="grid size-24 place-items-center rounded-full border border-cyan-vivid/40 bg-obsidian shadow-[inset_0_0_40px_rgba(0,242,255,0.25)] mic-breathe">
+            <div className="size-12 rounded-full bg-gradient-to-tr from-cyan-vivid/60 to-transparent border border-cyan-vivid/50" />
+          </div>
+          <div className="text-center">
+            <h1 className="font-display text-2xl font-bold uppercase tracking-tighter leading-none">
+              A Voz da <span className="text-cyan-vivid">Verdade</span>
+            </h1>
+            <p className="mt-3 text-[10px] font-medium uppercase tracking-[0.3em] text-ghost">
+              A luz do conhecimento para um novo despertar
+            </p>
+          </div>
+          <Loader2 className="mt-2 size-4 animate-spin text-cyan-vivid/60" />
+        </div>
       </div>
     );
   }
