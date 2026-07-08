@@ -11,13 +11,15 @@ interface CinemaModeProps {
   onClose: () => void;
 }
 
-export function CinemaMode({ open, question, answer, audioBase64, onClose }: CinemaModeProps) {
+export function CinemaMode({ open, question, audioBase64, onClose }: CinemaModeProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [hasFinished, setHasFinished] = useState(false);
   const settings = useAppSettings();
 
   useEffect(() => {
     if (!open) return;
+    setHasFinished(false);
     if (settings.ambienceEnabled) {
       startAmbience(settings.ambienceCategory, settings.ambienceVolume);
     }
@@ -26,11 +28,21 @@ export function CinemaMode({ open, question, answer, audioBase64, onClose }: Cin
 
   useEffect(() => {
     if (!open) return;
-    if (!audioBase64) return;
+    if (!audioBase64) {
+      // No audio — still mark as finished so the archive notice appears.
+      setHasFinished(true);
+      return;
+    }
     const audio = new Audio(`data:audio/mpeg;base64,${audioBase64}`);
     audioRef.current = audio;
-    audio.onplay = () => setIsSpeaking(true);
-    audio.onended = () => setIsSpeaking(false);
+    audio.onplay = () => {
+      setIsSpeaking(true);
+      setHasFinished(false);
+    };
+    audio.onended = () => {
+      setIsSpeaking(false);
+      setHasFinished(true);
+    };
     audio.onpause = () => setIsSpeaking(false);
     audio.play().catch(() => {
       /* autoplay may be blocked — user can hit replay */
@@ -95,19 +107,29 @@ export function CinemaMode({ open, question, answer, audioBase64, onClose }: Cin
         <div className="my-6 h-px bg-gradient-to-r from-transparent via-cyan-vivid/30 to-transparent" />
 
         <p className="text-[10px] uppercase tracking-[0.4em] text-cyan-vivid/60">
-          A Verdade responde
+          Revelação
         </p>
-        <p className="mt-3 max-h-[28vh] overflow-y-auto whitespace-pre-wrap font-display text-base leading-relaxed text-foreground">
-          {answer}
-        </p>
-
-        {audioBase64 && (
-          <button
-            onClick={replay}
-            className="mt-6 border border-cyan-vivid/40 px-5 py-2 text-[11px] uppercase tracking-[0.3em] text-cyan-vivid transition-colors hover:bg-cyan-vivid hover:text-obsidian"
-          >
-            Reouvir
-          </button>
+        {hasFinished ? (
+          <>
+            <p className="mt-3 font-display text-sm uppercase tracking-[0.25em] text-cyan-vivid/80">
+              A investigação foi arquivada.
+            </p>
+            <p className="mt-2 text-xs text-ghost/70">
+              O texto completo fica disponível no Histórico.
+            </p>
+            {audioBase64 && (
+              <button
+                onClick={replay}
+                className="mt-6 border border-cyan-vivid/40 px-5 py-2 text-[11px] uppercase tracking-[0.3em] text-cyan-vivid transition-colors hover:bg-cyan-vivid hover:text-obsidian"
+              >
+                Reouvir
+              </button>
+            )}
+          </>
+        ) : (
+          <p className="mt-3 font-serif italic text-sm text-ghost/70">
+            {isSpeaking ? "A Revelação fala. Ouve." : "A preparar a revelação..."}
+          </p>
         )}
       </div>
     </div>

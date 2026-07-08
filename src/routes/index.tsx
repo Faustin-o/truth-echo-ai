@@ -15,7 +15,7 @@ export const Route = createFileRoute("/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "A VOZ E A VERDADE — Oráculo" },
+      { title: "A VOZ DA VERDADE — Revelação" },
       {
         name: "description",
         content:
@@ -199,7 +199,7 @@ function OraclePage() {
       <header className="fixed top-0 left-0 z-40 flex w-full items-start justify-between bg-gradient-to-b from-obsidian via-obsidian/85 to-transparent p-6">
         <div className="space-y-1">
           <h1 className="font-display text-xl font-bold tracking-tighter uppercase leading-none">
-            A Voz e a <span className="text-cyan-vivid">Verdade</span>
+            A Voz da <span className="text-cyan-vivid">Verdade</span>
           </h1>
           <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-ghost">
             Revelando o que o sistema esconde
