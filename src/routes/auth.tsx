@@ -215,7 +215,7 @@ function AuthPage() {
             A Voz da <span className="text-cyan-vivid">Verdade</span>
           </h1>
           <p className="mt-2 text-[10px] uppercase tracking-[0.3em] text-ghost">
-            Revelando o que o sistema esconde
+            A luz do conhecimento para um novo despertar
           </p>
         </div>
 

@@ -202,7 +202,7 @@ function OraclePage() {
             A Voz da <span className="text-cyan-vivid">Verdade</span>
           </h1>
           <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-ghost">
-            Revelando o que o sistema esconde
+            A luz do conhecimento para um novo despertar
           </p>
         </div>
         <button
